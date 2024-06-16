@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>그림 퍼즐 맞추기</title>
+    <style>
+        #puzzle-container {
+            display: grid;
+            grid-template-columns: repeat(5, 120px);
+            grid-template-rows: repeat(2, auto);
+            gap: 2px;
+            width: 600px;
+            border: 1px solid #000;
+            margin-bottom: 20px;
+        }
+        .puzzle-piece {
+            width: 120px;
+            height: auto;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+        #message {
+            font-size: 1.2em;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>그림 퍼즐 맞추기</h1>
+    <div id="puzzle-container"></div>
+    <button onclick="checkOrder()">순서 확인</button>
+    <p id="message"></p>
+
+    <script>
+        const pieceUrls = [
+            'resized_piece_1.jpg',
+            'resized_piece_2.jpg',
+            'resized_piece_3.jpg',
+            'resized_piece_4.jpg',
+            'resized_piece_5.jpg',
+            'resized_piece_6.jpg',
+            'resized_piece_7.jpg',
+            'resized_piece_8.jpg',
+            'resized_piece_9.jpg',
+            'resized_piece_10.jpg'
+        ];
+
+        // Shuffle pieces
+        const shuffledUrls = pieceUrls.sort(() => Math.random() - 0.5);
+
+        const puzzleContainer = document.getElementById('puzzle-container');
+        shuffledUrls.forEach((url, index) => {
+            const img = document.createElement('img');
+            img.src = url;
+            img.id = 'piece-' + index;
+            img.className = 'puzzle-piece';
+            img.draggable = true;
+            img.ondragstart = dragStart;
+            img.ondragover = dragOver;
+            img.ondrop = drop;
+            puzzleContainer.appendChild(img);
+        });
+
+        function dragStart(event) {
+            event.dataTransfer.setData('text/plain', event.target.id);
+        }
+
+        function dragOver(event) {
+            event.preventDefault();
+        }
+
+        function drop(event) {
+            event.preventDefault();
+            const draggedElementId = event.dataTransfer.getData('text');
+            const targetElement = event.target;
+
+            const draggedElement = document.getElementById(draggedElementId);
+
+            const targetElementNextSibling = targetElement.nextElementSibling;
+            const draggedElementNextSibling = draggedElement.nextElementSibling;
+
+            targetElement.replaceWith(draggedElement);
+            if (targetElementNextSibling) {
+                targetElementNextSibling.before(targetElement);
+            } else {
+                puzzleContainer.appendChild(targetElement);
+            }
+
+            if (draggedElementNextSibling) {
+                draggedElementNextSibling.before(targetElement);
+            } else {
+                puzzleContainer.appendChild(targetElement);
+            }
+        }
+
+        function checkOrder() {
+            const pieces = document.querySelectorAll('.puzzle-piece');
+            let correctOrder = true;
+            pieces.forEach((piece, index) => {
+                const pieceNumber = parseInt(piece.src.match(/resized_piece_(\d+)/)[1]);
+                if (pieceNumber !== index + 1) {
+                    correctOrder = false;
+                }
+            });
+            if (correctOrder) {
+                document.getElementById('message').textContent = '짝짝짝, 챗GPT 강사님, 회원님, 6주간 수고하셨습니다.';
+            } else {
+                document.getElementById('message').textContent = '순서가 올바르지 않습니다. 다시 시도해보세요.';
+            }
+        }
+    </script>
+</body>
+</html>
