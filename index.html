@@ -5,14 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>그림 퍼즐 맞추기</title>
     <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
         #puzzle-container {
             display: grid;
             grid-template-columns: repeat(5, 120px);
             grid-template-rows: repeat(2, auto);
             gap: 2px;
-            width: 600px;
             border: 1px solid #000;
-            margin-bottom: 20px;
         }
         .puzzle-piece {
             width: 120px;
@@ -20,17 +27,29 @@
             border: 1px solid #ccc;
             cursor: pointer;
         }
-        #message {
-            font-size: 1.2em;
-            color: green;
+        #buttons {
+            margin-top: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+        .message {
+            display: none;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
     <h1>그림 퍼즐 맞추기</h1>
     <div id="puzzle-container"></div>
-    <button onclick="checkOrder()">순서 확인</button>
-    <p id="message"></p>
+    <div id="buttons">
+        <button onclick="checkOrder()">순서 확인</button>
+        <button onclick="resetGame()">다시 시작</button>
+    </div>
+    <div id="message" class="message">짝짝짝, 챗GPT 강사님, 회원 여러분, 6주간 수고하셨습니다.</div>
 
     <script>
         const pieceUrls = [
@@ -46,21 +65,32 @@
             'resized_piece_10.jpg'
         ];
 
-        // Shuffle pieces
-        const shuffledUrls = pieceUrls.sort(() => Math.random() - 0.5);
-
+        let shuffledUrls = [];
         const puzzleContainer = document.getElementById('puzzle-container');
-        shuffledUrls.forEach((url, index) => {
-            const img = document.createElement('img');
-            img.src = url;
-            img.id = 'piece-' + index;
-            img.className = 'puzzle-piece';
-            img.draggable = true;
-            img.ondragstart = dragStart;
-            img.ondragover = dragOver;
-            img.ondrop = drop;
-            puzzleContainer.appendChild(img);
-        });
+        const messageDiv = document.getElementById('message');
+
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        function initializePuzzle() {
+            shuffledUrls = shuffle([...pieceUrls]);
+            puzzleContainer.innerHTML = '';
+            shuffledUrls.forEach((url, index) => {
+                const img = document.createElement('img');
+                img.src = url;
+                img.id = 'piece-' + index;
+                img.className = 'puzzle-piece';
+                img.draggable = true;
+                img.ondragstart = dragStart;
+                img.ondragover = dragOver;
+                img.ondrop = drop;
+                puzzleContainer.appendChild(img);
+            });
+            messageDiv.style.display = 'none';
+            puzzleContainer.style.display = 'grid';
+            document.getElementById('buttons').style.display = 'block';
+        }
 
         function dragStart(event) {
             event.dataTransfer.setData('text/plain', event.target.id);
@@ -104,11 +134,18 @@
                 }
             });
             if (correctOrder) {
-                document.getElementById('message').textContent = '짝짝짝, 챗GPT 강사님, 회원님, 6주간 수고하셨습니다.';
+                messageDiv.style.display = 'block';
+                puzzleContainer.style.display = 'none';
             } else {
-                document.getElementById('message').textContent = '순서가 올바르지 않습니다. 다시 시도해보세요.';
+                alert('순서가 올바르지 않습니다. 다시 시도해보세요.');
             }
         }
+
+        function resetGame() {
+            initializePuzzle();
+        }
+
+        initializePuzzle();
     </script>
 </body>
 </html>
